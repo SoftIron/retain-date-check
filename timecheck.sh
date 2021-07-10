@@ -7,6 +7,7 @@ if [ "$1" == "-h" ] || [[ $# -eq 0 ]] ; then
 fi
 
 BUCKET_NAME=$(uuidgen | tail -c 10)
+DATE=$(date "+%Y-%m-%d %H:%M:%S" -d "+1 month")
 FILE_NAME="test_file.txt"
 RGW_IP=$1
 
@@ -32,7 +33,7 @@ echo "Creating test file"
 curl -s http://metaphorpsum.com/paragraphs/20 > $FILE_NAME
 
 echo "Putting object"
-PUT_OUTPUT=$(aws s3api put-object --bucket=$BUCKET_NAME --endpoint-url=http://$RGW_IP --key=$FILE_NAME --object-lock-retain-until-date "2021-08-08 14:00:00" --object-lock-mode COMPLIANCE)
+PUT_OUTPUT=$(aws s3api put-object --bucket=$BUCKET_NAME --endpoint-url=http://$RGW_IP --key=$FILE_NAME --object-lock-retain-until-date "$DATE" --object-lock-mode COMPLIANCE)
 echo $PUT_OUTPUT
 VERSION_ID=`echo $PUT_OUTPUT | jq .VersionId`
 echo "Object Version ID $VERSION_ID"
