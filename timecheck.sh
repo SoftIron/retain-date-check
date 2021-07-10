@@ -11,11 +11,13 @@ DATE=$(date "+%Y-%m-%d %H:%M:%S" -d "+1 month")
 FILE_NAME="test_file.txt"
 RGW_IP=$1
 
-if [ $(dpkg-query -W -f='${Status}' curl 2>/dev/null | grep -c "ok installed") -eq 0 ];
-then
-  echo "Needs curl"
-  exit 1
-fi
+for pkg in curl awscli; do
+  if [ $(dpkg-query -W -f='${Status}' $pkg 2>/dev/null | grep -c "ok installed") -eq 0 ];
+  then
+    echo "Needs $pkg"
+    exit 1
+  fi
+done
 
 echo "Testing Credentials"
 TESTCREDS=$((aws s3api list-buckets --endpoint-url=http://$RGW_IP) 2>&1)
