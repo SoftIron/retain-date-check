@@ -7,7 +7,6 @@ if [ "$1" == "-h" ] || [[ $# -eq 0 ]] ; then
 fi
 
 BUCKET_NAME=$(uuidgen | tail -c 10)
-OBJECT_NAME=$(uuidgen | tail -c 10)
 FILE_NAME="test_file.txt"
 RGW_IP=$1
 
