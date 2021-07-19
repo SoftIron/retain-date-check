@@ -1,5 +1,5 @@
 #!/bin/bash
-# Takes IP of a Rados Gateway and checks the retain date format of an object with object lock
+# Takes S3 endpoint and checks the retain date format of an object with object lock
 
 if [ "$1" == "-h" ] || [[ $# -eq 0 ]] ; then
   echo "Usage: `basename $0` RGW_IP"
@@ -24,6 +24,15 @@ TESTCREDS=$((aws s3api list-buckets --endpoint-url=http://$RGW_IP) 2>&1)
 if [[ $TESTCREDS == *"InvalidAccessKeyId"* ]] || [[ $TESTCREDS == *"SignatureDoesNotMatch"* ]]; then
   echo "Credentials appear to be incorrect, check keys in ~/.aws/credentials"
   exit 1
+elif [[ $TESTCREDS == *"No such file or directory"* ]] || [[ $TESTCREDS == *"command not found"* ]]; then
+  echo "awscli doesn't appear to be installed - maybe try apt install awcli?"
+  exit 1
+elif [[ $TESTCREDS == *"Unable to locate credentials"* ]]; then
+  echo "~/.aws/credentials file not configured correctly"
+  exit 1
+elif [[ $TESTCREDS == *"Could not connect to the endpoint"* ]]; then
+  echo "RGW appears to be down"
+  exit 1
 else
   echo "OK."
 fi
@@ -43,17 +52,8 @@ echo "Object Version ID $VERSION_ID"
 echo "Getting object metadata"
 aws s3api head-object --bucket=$BUCKET_NAME --endpoint-url=http://$RGW_IP --key=$FILE_NAME
 
-#echo "Deleting object"
-#aws s3api delete-object --bucket=$BUCKET_NAME --endpoint-url=http://$RGW_IP --key=$FILE_NAME --version-id $VERSION_ID
-
-#echo "Emptying bucket"
-#aws s3 rm --recursive --endpoint-url=http://$RGW_IP s3://$BUCKET_NAME
-
 echo "Deleting test file"
 rm $FILE_NAME
 
 echo "Listing buckets"
 aws s3api list-buckets --endpoint-url=http://$RGW_IP
-
-#echo "Deleting bucket $BUCKET_NAME"
-#aws s3api delete-bucket --bucket=$BUCKET_NAME --endpoint-url=http://$RGW_IP
